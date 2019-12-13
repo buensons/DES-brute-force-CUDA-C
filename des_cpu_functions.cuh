@@ -7,7 +7,7 @@
 #include <math.h>
 #include <time.h>
 
-#include "des_constants.cuh"
+#include "des_constants.h"
 
 typedef unsigned long uint32;
 typedef unsigned long long uint64;
