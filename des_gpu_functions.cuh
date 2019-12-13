@@ -24,9 +24,11 @@ __device__ __host__ uint64 permute(uint64 key, int * table, int size);
 // TO-DO
 __global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * cracked_key, int * has_key) {
     
-    uint32 start = blockIdx.x * blockDim.x + threadIdx.x;
+    uint64 start = blockIdx.x * blockDim.x + threadIdx.x;
+    uint64 stride = blockDim.x * gridDim.x;
+    uint64 limit = 0;
 
-    for (uint64 i = start; i < start + blockDim.x; i++)
+    for (uint64 i = start; i < ~(limit); i += stride)
 	{
 		uint64 currentValue = encrypt_message_gpu(message, i);
 		if (currentValue == encrypted_message) {

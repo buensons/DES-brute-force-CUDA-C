@@ -22,6 +22,10 @@ int main(int argc, char ** argv) {
     }
 
     int key_size = atoi(argv[1]);
+    if(key_size > 64) {
+        printf("Key size reduced to 64 bits.");
+        key_size = 64;
+    }
     uint64 key = generate_key(key_size);
     uint64 encrypted_message = encrypt_message(data, key);
     clock_t start, end;
@@ -70,7 +74,7 @@ int main(int argc, char ** argv) {
         ERR(cudaGetErrorString(error));
     }
 
-    printf("GPU : Brute forcing DES...\n");
+    printf("\nGPU : Brute forcing DES...\n");
     start = clock();
 
     brute_force<<<4096, 1024>>>(data, encrypted_message, cracked_key, has_key);
