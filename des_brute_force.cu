@@ -25,7 +25,7 @@ int main(int argc, char ** argv) {
     uint64 key = generate_key(key_size);
     uint64 encrypted_message = encrypt_message(data, key);
     clock_t start, end;
-    double time_elapsed;
+    float time_elapsed;
 
     // --------- CPU -------------
 
@@ -38,10 +38,10 @@ int main(int argc, char ** argv) {
         //printBits(i);
         if(msg == encrypted_message) {
             end = clock();
-            time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+            time_elapsed = ((float) (end - start)) / CLOCKS_PER_SEC;
             printf("CPU : Key found!\n");
             printf("CPU : Found key: %llX\n", i);
-            printf("CPU : Time elapsed - %d\n", time_elapsed);
+            printf("CPU : Time elapsed - %f\n", time_elapsed);
             break;
         }
     }
@@ -76,7 +76,7 @@ int main(int argc, char ** argv) {
     brute_force<<<4096, 1024>>>(data, encrypted_message, cracked_key, has_key);
 
     end = clock();
-    time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+    time_elapsed = ((float) (end - start)) / CLOCKS_PER_SEC;
 
     if((error = cudaDeviceSynchronize()) != cudaSuccess) ERR(cudaGetErrorString(error));
     
@@ -85,7 +85,7 @@ int main(int argc, char ** argv) {
     }
 
     printf("GPU : Key found!\n");
-    printf("GPU : Time elapsed - %d\n", time_elapsed);
+    printf("GPU : Time elapsed - %f\n", time_elapsed);
     printf("GPU : Cracked key: %llX\n", found_key);
 
     cudaFree(has_key);
