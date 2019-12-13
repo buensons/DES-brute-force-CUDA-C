@@ -52,25 +52,27 @@ int main() {
     uint64 * cracked_key = NULL;
     uint64 found_key;
 
-    if(cudaMalloc(has_key, sizeof(bool)) != cudaSuccess) {
-        ERR(cudaGetErrorString(cudaStatus));
+    cudaError_t error;
+
+    if((error = cudaMalloc((*void)has_key, sizeof(bool))) != cudaSuccess) {
+        ERR(cudaGetErrorString(error));
     }
 
-    if(cudaMalloc(cracked_key, sizeof(uint64)) != cudaSuccess) {
-        ERR(cudaGetErrorString(cudaStatus));
+    if((error = cudaMalloc((*void)cracked_key, sizeof(uint64))) != cudaSuccess) {
+        ERR(cudaGetErrorString(error));
     }
 
-    if(cudaMemcpy(has_key, false, sizeof(bool), cudaMemcpyHostToDevice) != cudaSuccess) {
-        ERR(cudaGetErrorString(cudaStatus));
+    if((error = cudaMemcpy((has_key, false, sizeof(bool), cudaMemcpyHostToDevice)) != cudaSuccess) {
+        ERR(cudaGetErrorString(error));
     }
 
     printf("GPU : Brute forcing DES...\n")
     brute_force<<<4096, 1024>>>(data, encrypted_message, cracked_key, has_key);
 
-    if(cudaDeviceSynchronize() != cudaSuccess) ERR(cudaGetErrorString(cudaStatus));
+    if((error = cudaDeviceSynchronize()) != cudaSuccess) ERR(cudaGetErrorString(error));
     
-    if(cudaMemcpy(found_key, gpu_key, sizeof(uint64), cudaMemcpyDeviceToHost) != cudaSuccess) {
-        ERR(cudaGetErrorString(cudaStatus));
+    if((error = cudaMemcpy(found_key, cracked_key, sizeof(uint64), cudaMemcpyDeviceToHost)) != cudaSuccess) {
+        ERR(cudaGetErrorString(error));
     }
 
     printf("GPU : Key found!\n");
@@ -86,9 +88,11 @@ int main() {
 // TO-DO
 __global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * cracked_key, bool * has_key) {
     
-    for (uint64 i = blockIdx.x * blockDim.x + threadIdx.x; i <= maxLenght; i += blockDim.x * gridDim.x)
+    uint32 start = blockIdx.x * blockDim.x + threadIdx.x;
+
+    for (uint64 i = start; i <= start + ; i += blockDim.x * gridDim.x)
 	{
-		uint64 currentValue = EncryptData(message, i);
+		uint64 currentValue = encrypt_message_gpu(message, i);
 		if (currentValue == encrypt_message) {
 			* cracked_key = i;
 			* has_key = true;
