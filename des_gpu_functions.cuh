@@ -102,7 +102,7 @@ __device__ uint64 encrypt_message_gpu(uint64 message, uint64 key) {
 
     for(int i = 1; i <= 16; i++) {
         L[i] = R[i-1];
-        R[i] = L[i-1] ^ f(R[i-1], K[i-1]);
+        R[i] = L[i-1] ^ f_gpu(R[i-1], K[i-1]);
     }
 
     uint64 RL = ((uint64) R[16] << 32) | L[16];

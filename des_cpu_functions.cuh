@@ -5,14 +5,14 @@
 #include <time.h>
 #include <strings.h>
 #include <math.h>
+#include <time.h>
 
 #include "des_constants.cuh"
-#include "mt64.h"
 
 typedef unsigned long uint32;
 typedef unsigned long long uint64;
 
-__host__ uint64 generate_key();
+__host__ uint64 generate_key(int key_size);
 
 __host__ void generate_subkeys(uint64 key, uint64 * subkeys);
 
@@ -23,13 +23,13 @@ __host__ uint32 f(uint32 R, uint64 K);
 __host__ uint64 encrypt_message(uint64 message, uint64 key);
 
 
-__host__ uint64 generate_key() {
+__host__ uint64 generate_key(int key_size) {
 
-    init_genrand64(time(NULL));
+    srand(time(NULL));
     uint64 key = 0;
 
-    for(int i = 0; i < DES_KEY_SIZE; i++) {
-        const uint64 bit = (uint64)round(genrand64_real2());
+    for(int i = 0; i < key_size; i++) {
+        const uint64 bit = (uint64) rand() % 2;
         key = (key & ~(1ULL << i)) | (bit << i);
     }
     return key;

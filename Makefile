@@ -1,10 +1,9 @@
 CC=gcc
 NVCC=nvcc
-LDLIBS = mt19937.o
 
 all: des
 
-des: *.cu *.h *.cuh *.o
+des: *.cu *.h *.cuh
 	$(NVCC) -o des des_brute_force.cu
 
 .PHONY: 
