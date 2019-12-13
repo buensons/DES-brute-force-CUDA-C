@@ -26,10 +26,10 @@ __global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * c
     
     uint32 start = blockIdx.x * blockDim.x + threadIdx.x;
 
-    for (uint64 i = start; i <= start + ; i += blockDim.x * gridDim.x)
+    for (uint64 i = start; i <= start + blockDim.x; i++)
 	{
 		uint64 currentValue = encrypt_message_gpu(message, i);
-		if (currentValue == encrypt_message) {
+		if (currentValue == encrypted_message) {
 			* cracked_key = i;
 			* has_key = true;
 			return;

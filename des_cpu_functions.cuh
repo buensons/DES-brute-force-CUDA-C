@@ -8,6 +8,7 @@
 #include <time.h>
 
 #include "des_constants.h"
+#include "des_gpu_functions.cuh"
 
 typedef unsigned long uint32;
 typedef unsigned long long uint64;

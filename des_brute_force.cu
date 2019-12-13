@@ -17,7 +17,7 @@ int main(int argc, char ** argv) {
     uint64 data = 0x0123456789ABCDEF;
 
     if(argc != 2) {
-        perror("Usage: %s <key_size>\n", argv[0]);
+        printf("Usage: %s <key_size>\n", argv[0]);
         return EXIT_FAILURE;
     }
 
