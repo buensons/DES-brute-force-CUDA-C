@@ -48,7 +48,7 @@ int main() {
 
     cudaError_t error;
 
-    if((error = cudaMalloc((has_key, sizeof(bool))) != cudaSuccess) {
+    if((error = cudaMalloc(has_key, sizeof(bool))) != cudaSuccess) {
         ERR(cudaGetErrorString(error));
     }
 
