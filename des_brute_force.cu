@@ -27,18 +27,38 @@ int main(int argc, char ** argv) {
     clock_t start, end;
     double time_elapsed;
 
+    // --------- CPU -------------
+
+    printf("CPU : Brute forcing DES...\n");
+    
+    start = clock();
+
+    for(uint64 i = 0; i <= ~(0ULL); i++) {
+        uint64 msg = encrypt_message(data, i);
+        //printBits(i);
+        if(msg == encrypted_message) {
+            end = clock();
+            time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+            printf("CPU : Key found!\n");
+            printf("CPU : Found key: %llX\n", i);
+            printf("CPU : Time elapsed - %d\n", time_elapsed);
+            break;
+        }
+    }
+
+
     // --------- GPU ------------
     
     //cudaSetDevice(cutGetMaxGflopsDeviceId());
 
-    bool * has_key = NULL;
-    bool temp = false;
+    int * has_key = NULL;
+    int temp = 0;
     uint64 * cracked_key = NULL;
     uint64 found_key;
 
     cudaError_t error;
 
-    if((error = cudaMalloc(&has_key, sizeof(bool))) != cudaSuccess) {
+    if((error = cudaMalloc(&has_key, sizeof(int))) != cudaSuccess) {
         ERR(cudaGetErrorString(error));
     }
 
@@ -46,7 +66,7 @@ int main(int argc, char ** argv) {
         ERR(cudaGetErrorString(error));
     }
 
-    if((error = cudaMemcpy(has_key, &temp, sizeof(bool), cudaMemcpyHostToDevice)) != cudaSuccess) {
+    if((error = cudaMemcpy(has_key, &temp, sizeof(int), cudaMemcpyHostToDevice)) != cudaSuccess) {
         ERR(cudaGetErrorString(error));
     }
 
@@ -70,26 +90,6 @@ int main(int argc, char ** argv) {
 
     cudaFree(has_key);
     cudaFree(cracked_key);
-
-
-    // --------- CPU -------------
-
-    printf("CPU : Brute forcing DES...\n");
-    
-    start = clock();
-
-    for(uint64 i = 0; i <= ~(0ULL); i++) {
-        uint64 msg = encrypt_message(data, i);
-        //printBits(i);
-        if(msg == encrypted_message) {
-            end = clock();
-            time_elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
-            printf("CPU : Key found!\n");
-            printf("CPU : Found key: %llX\n", i);
-            printf("CPU : Time elapsed - %d\n", time_elapsed);
-            break;
-        }
-    }
 
     return EXIT_SUCCESS;
 }

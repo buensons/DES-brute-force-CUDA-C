@@ -6,7 +6,7 @@
 typedef unsigned long long uint64;
 typedef unsigned long uint32;
 
-__global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * original_key, bool * has_key);
+__global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * original_key, int * has_key);
 
 __device__ void generate_subkeys_gpu(uint64 key, uint64 * subkeys);
 
@@ -22,19 +22,19 @@ __device__ __host__ uint64 permute(uint64 key, int * table, int size);
 
 
 // TO-DO
-__global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * cracked_key, bool * has_key) {
+__global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * cracked_key, int * has_key) {
     
     uint32 start = blockIdx.x * blockDim.x + threadIdx.x;
 
-    for (uint64 i = start; i <= start + blockDim.x; i++)
+    for (uint64 i = start; i < start + blockDim.x; i++)
 	{
 		uint64 currentValue = encrypt_message_gpu(message, i);
 		if (currentValue == encrypted_message) {
 			* cracked_key = i;
-			* has_key = true;
+			* has_key = 1;
 			return;
 		}
-		if (*has_key == true) {
+		if (*has_key == 1) {
 			return;
 		}
 	}
