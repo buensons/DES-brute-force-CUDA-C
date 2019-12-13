@@ -1,6 +1,45 @@
 #include "des_cuda_constants.cuh"
 #include "des_gpu_functions.cuh"
 
+// TO-DO
+__global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * cracked_key, bool * has_key) {
+    
+    uint32 start = blockIdx.x * blockDim.x + threadIdx.x;
+
+    for (uint64 i = start; i <= start + ; i += blockDim.x * gridDim.x)
+	{
+		uint64 currentValue = encrypt_message_gpu(message, i);
+		if (currentValue == encrypt_message) {
+			* cracked_key = i;
+			* has_key = true;
+			return;
+		}
+		if (*has_key == true) {
+			return;
+		}
+	}
+}
+
+__device__ __host__ void printBits(uint64 n) 
+{ 
+    uint64 i; 
+    for (i = 1ULL << 63; i > 0; i = i / 2) {
+        (n & i) ? printf("1") : printf("0"); 
+    }
+    printf("\n");
+} 
+
+__device__ __host__ uint64 permute(uint64 key, int * table, int size) {
+    uint64 permuted_key = 0;
+
+    for(int i = 0; i < size; i++) {
+        int bit = (key >> (table[i] - 1)) & 1U;
+        if(bit == 1) permuted_key |= 1ULL << i;
+    }
+
+    return permuted_key;
+}
+
 __device__ void generate_subkeys_gpu(uint64 key, uint64 * subkeys) {
     int size_PC1 = sizeof(PC_1_CUDA)/sizeof(PC_1_CUDA[0]);
     int size_PC2 = sizeof(PC_2_CUDA)/sizeof(PC_2_CUDA[0]);

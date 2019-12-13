@@ -6,6 +6,7 @@
 #include <strings.h>
 #include <math.h>
 
+typedef unsigned long uint32;
 typedef unsigned long long uint64;
 
 __host__ uint64 generate_key();
