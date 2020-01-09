@@ -6,7 +6,7 @@
 typedef unsigned long long uint64;
 typedef unsigned long uint32;
 
-__global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * original_key, int * has_key);
+__global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * cracked_key, int * has_key);
 
 __device__ void generate_subkeys_gpu(uint64 key, uint64 * subkeys);
 
@@ -24,24 +24,25 @@ __device__ __host__ uint64 permute(uint64 key, int * table, int size);
 // TO-DO
 __global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * cracked_key, int * has_key) {
     
-    uint64 start = blockIdx.x * blockDim.x + threadIdx.x;
+    uint64 i = blockIdx.x * blockDim.x + threadIdx.x;
     uint64 stride = blockDim.x * gridDim.x;
     uint64 limit = 0;
 
-    for (uint64 i = start; i < ~(limit); i += stride)
+    while(i < ~(limit) && *has_key != 1)
 	{
-		uint64 currentValue = encrypt_message_gpu(message, i);
+        uint64 currentValue = encrypt_message_gpu(message, i);
+        printf("i: %llu, stride: %llu, enc_msg: %llu, curr: %llu, has_key: %d", i, stride, encrypted_message, currentValue, *has_key);
 		if (currentValue == encrypted_message) {
 			* cracked_key = i;
 			* has_key = 1;
 			return;
-		}
-		if (*has_key == 1) {
-			return;
-		}
+        }
+        
+        i += stride;
 	}
 }
 
+// helper function for debugging purposes
 __device__ __host__ void printBits(uint64 n) 
 { 
     uint64 i; 
@@ -79,8 +80,8 @@ __device__ void generate_subkeys_gpu(uint64 key, uint64 * subkeys) {
         C[i] = C[i-1] << SHIFTS_CUDA[i-1];
         D[i] = D[i-1] << SHIFTS_CUDA[i-1];
 
-        C[i] |= C[i] >> (29 - SHIFTS_CUDA[i-1]);
-        D[i] |= D[i] >> (29 - SHIFTS_CUDA[i-1]);
+        C[i] |= C[i] >> 28;
+        D[i] |= D[i] >> 28;
 
         C[i] &= ~(3UL << 28);
         D[i] &= ~(3UL << 28);

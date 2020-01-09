@@ -31,6 +31,48 @@ int main(int argc, char ** argv) {
     clock_t start, end;
     float time_elapsed;
 
+    // --------- GPU ------------
+
+    int * has_key = NULL;
+    int temp = 0;
+    uint64 * cracked_key = NULL;
+    uint64 found_key;
+
+    cudaError_t error;
+
+    if((error = cudaMalloc((void **) &has_key, sizeof(int))) != cudaSuccess) {
+        ERR(cudaGetErrorString(error));
+    }
+
+    if((error = cudaMalloc((void **) &cracked_key, sizeof(uint64))) != cudaSuccess) {
+        ERR(cudaGetErrorString(error));
+    }
+
+    if((error = cudaMemcpy(has_key, &temp, sizeof(int), cudaMemcpyHostToDevice)) != cudaSuccess) {
+        ERR(cudaGetErrorString(error));
+    }
+
+    printf("\nGPU : Brute forcing DES...\n");
+    start = clock();
+
+    brute_force<<<512, 512>>>(data, encrypted_message, cracked_key, has_key);
+
+    end = clock();
+    time_elapsed = ((float) (end - start)) / CLOCKS_PER_SEC;
+
+    if((error = cudaDeviceSynchronize()) != cudaSuccess) ERR(cudaGetErrorString(error));
+    
+    if((error = cudaMemcpy(&found_key, cracked_key, sizeof(uint64), cudaMemcpyDeviceToHost)) != cudaSuccess) {
+        ERR(cudaGetErrorString(error));
+    }
+
+    printf("GPU : Key found!\n");
+    printf("GPU : Time elapsed - %f\n", time_elapsed);
+    printf("GPU : Cracked key: %llX\n", found_key);
+
+    cudaFree(has_key);
+    cudaFree(cracked_key);
+
     // --------- CPU -------------
 
     printf("CPU : Brute forcing DES...\n");
@@ -51,49 +93,7 @@ int main(int argc, char ** argv) {
     }
 
 
-    // --------- GPU ------------
-    
-    //cudaSetDevice(cutGetMaxGflopsDeviceId());
 
-    int * has_key = NULL;
-    int temp = 0;
-    uint64 * cracked_key = NULL;
-    uint64 found_key;
-
-    cudaError_t error;
-
-    if((error = cudaMalloc(&has_key, sizeof(int))) != cudaSuccess) {
-        ERR(cudaGetErrorString(error));
-    }
-
-    if((error = cudaMalloc(&cracked_key, sizeof(uint64))) != cudaSuccess) {
-        ERR(cudaGetErrorString(error));
-    }
-
-    if((error = cudaMemcpy(has_key, &temp, sizeof(int), cudaMemcpyHostToDevice)) != cudaSuccess) {
-        ERR(cudaGetErrorString(error));
-    }
-
-    printf("\nGPU : Brute forcing DES...\n");
-    start = clock();
-
-    brute_force<<<4096, 1024>>>(data, encrypted_message, cracked_key, has_key);
-
-    end = clock();
-    time_elapsed = ((float) (end - start)) / CLOCKS_PER_SEC;
-
-    if((error = cudaDeviceSynchronize()) != cudaSuccess) ERR(cudaGetErrorString(error));
-    
-    if((error = cudaMemcpy(&found_key, cracked_key, sizeof(uint64), cudaMemcpyDeviceToHost)) != cudaSuccess) {
-        ERR(cudaGetErrorString(error));
-    }
-
-    printf("GPU : Key found!\n");
-    printf("GPU : Time elapsed - %f\n", time_elapsed);
-    printf("GPU : Cracked key: %llX\n", found_key);
-
-    cudaFree(has_key);
-    cudaFree(cracked_key);
 
     return EXIT_SUCCESS;
 }
