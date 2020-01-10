@@ -28,12 +28,12 @@ __global__ void brute_force(uint64 * message, uint64 * encrypted_message, uint64
     while(i < ~(0ULL) && *has_key == 0) {
         uint64 currentValue = encrypt_message_gpu(*message, i);
 	
-	if (currentValue == *encrypted_message) {
-	    *cracked_key = i;
-	    *has_key = 1;   
+	    if (currentValue == *encrypted_message) {
+	        *cracked_key = i;
+	        *has_key = 1;   
         }
         
-	i += stride;
+	    i += stride;
     }
 }
 
