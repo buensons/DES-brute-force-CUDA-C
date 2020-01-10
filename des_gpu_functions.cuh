@@ -6,7 +6,7 @@
 typedef unsigned long long uint64;
 typedef unsigned long uint32;
 
-__global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * cracked_key, int * has_key);
+__global__ void brute_force(uint64 *  message, uint64 * encrypted_message, uint64 * cracked_key, int * has_key);
 
 __device__ void generate_subkeys_gpu(uint64 key, uint64 * subkeys);
 
@@ -22,17 +22,16 @@ __device__ __host__ uint64 permute(uint64 key, int * table, int size);
 
 
 // TO-DO
-__global__ void brute_force(uint64 message, uint64 encrypted_message, uint64 * cracked_key, int * has_key) {
+__global__ void brute_force(uint64 * message, uint64 * encrypted_message, uint64 * cracked_key, int * has_key) {
     
     uint64 i = blockIdx.x * blockDim.x + threadIdx.x;
     uint64 stride = blockDim.x * gridDim.x;
-    uint64 limit = 0;
 
-    while(i < ~(limit) && *has_key != 1)
+    while(i < ~(0ULL) && *has_key != 1)
 	{
-        uint64 currentValue = encrypt_message_gpu(message, i);
-        printf("i: %llu, stride: %llu, enc_msg: %llu, curr: %llu, has_key: %d", i, stride, encrypted_message, currentValue, *has_key);
-		if (currentValue == encrypted_message) {
+        uint64 currentValue = encrypt_message_gpu(*message, i);
+        printf("i: %llu, stride: %llu, enc_msg: %llu, curr: %llu, has_key: %d\n", i, stride, *encrypted_message, currentValue, *has_key);
+		if (currentValue == *encrypted_message) {
 			* cracked_key = i;
 			* has_key = 1;
 			return;

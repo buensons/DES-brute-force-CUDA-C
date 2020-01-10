@@ -13,7 +13,7 @@
 
 int main(int argc, char ** argv) {
 
-    // could-have: take input message and split into 64-bit blocks
+    // could-have: take custom input message and split into 64-bit blocks
     uint64 data = 0x0123456789ABCDEF;
 
     if(argc != 2) {
@@ -37,6 +37,8 @@ int main(int argc, char ** argv) {
     int temp = 0;
     uint64 * cracked_key = NULL;
     uint64 found_key;
+    uint64 * d_data = NULL;
+    uint64 * d_msg = NULL;
 
     cudaError_t error;
 
@@ -52,15 +54,20 @@ int main(int argc, char ** argv) {
         ERR(cudaGetErrorString(error));
     }
 
+    cudaMalloc((void **) & d_data, sizeof(uint64));	
+    cudaMalloc((void **) & d_msg, sizeof(uint64));	
+    cudaMemcpy(d_data, &data, sizeof(uint64), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_msg, &encrypted_message, sizeof(uint64), cudaMemcpyHostToDevice);
+    
     printf("\nGPU : Brute forcing DES...\n");
     start = clock();
 
-    brute_force<<<512, 512>>>(data, encrypted_message, cracked_key, has_key);
-
-    end = clock();
-    time_elapsed = ((float) (end - start)) / CLOCKS_PER_SEC;
+    brute_force<<<8, 64>>>(d_data, d_msg, cracked_key, has_key);
 
     if((error = cudaDeviceSynchronize()) != cudaSuccess) ERR(cudaGetErrorString(error));
+    
+    end = clock();
+    time_elapsed = ((float) (end - start)) / CLOCKS_PER_SEC;
     
     if((error = cudaMemcpy(&found_key, cracked_key, sizeof(uint64), cudaMemcpyDeviceToHost)) != cudaSuccess) {
         ERR(cudaGetErrorString(error));
@@ -72,6 +79,8 @@ int main(int argc, char ** argv) {
 
     cudaFree(has_key);
     cudaFree(cracked_key);
+    cudaFree(d_data);
+    cudaFree(d_msg);
 
     // --------- CPU -------------
 
@@ -91,9 +100,6 @@ int main(int argc, char ** argv) {
             break;
         }
     }
-
-
-
 
     return EXIT_SUCCESS;
 }
