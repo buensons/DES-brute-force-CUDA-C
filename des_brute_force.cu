@@ -72,7 +72,7 @@ int main(int argc, char ** argv) {
     printf("\nGPU : Brute forcing DES...\n");
     start = clock();
 
-    brute_force<<<8, 64>>>(d_data, d_msg, cracked_key, has_key);
+    brute_force<<<256, 128>>>(d_data, d_msg, cracked_key, has_key);
 
     if((error = cudaDeviceSynchronize()) != cudaSuccess) ERR(cudaGetErrorString(error));
     
