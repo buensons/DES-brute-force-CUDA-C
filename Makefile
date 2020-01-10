@@ -4,7 +4,7 @@ NVCC=nvcc
 all: des
 
 des: *.cu *.h *.cuh
-	$(NVCC) -o des des_brute_force.cu
+	$(NVCC) -arch=sm_30 -o des des_brute_force.cu
 
 .PHONY: 
 	clean all

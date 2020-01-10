@@ -7,13 +7,12 @@
 #include "device_launch_parameters.h"
 
 #include "des_cpu_functions.cuh"
-#include "des_gpu_functions.cuh"
+#include "des_gpu_functions.cu"
 
 #define ERR(source) (perror(source), fprintf(stderr,"%s:%d\n",__FILE__,__LINE__), exit(EXIT_FAILURE))
 
 int main(int argc, char ** argv) {
 
-    // could-have: take custom input message and split into 64-bit blocks
     uint64 data = 0x0123456789ABCDEF;
 
     if(argc != 2) {
@@ -53,12 +52,23 @@ int main(int argc, char ** argv) {
     if((error = cudaMemcpy(has_key, &temp, sizeof(int), cudaMemcpyHostToDevice)) != cudaSuccess) {
         ERR(cudaGetErrorString(error));
     }
-
-    cudaMalloc((void **) & d_data, sizeof(uint64));	
-    cudaMalloc((void **) & d_msg, sizeof(uint64));	
-    cudaMemcpy(d_data, &data, sizeof(uint64), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_msg, &encrypted_message, sizeof(uint64), cudaMemcpyHostToDevice);
     
+    if((error = cudaMalloc((void **) &d_data, sizeof(uint64))) != cudaSuccess) {
+        ERR(cudaGetErrorString(error));
+    }
+    
+    if((error = cudaMalloc((void **) &d_msg, sizeof(uint64))) != cudaSuccess) {
+        ERR(cudaGetErrorString(error));
+    }
+    
+    if((error = cudaMemcpy(d_msg, &encrypted_message, sizeof(uint64), cudaMemcpyHostToDevice)) != cudaSuccess) {
+        ERR(cudaGetErrorString(error));
+    }
+    
+    if((error = cudaMemcpy(d_data, &data, sizeof(uint64), cudaMemcpyHostToDevice)) != cudaSuccess) {
+        ERR(cudaGetErrorString(error));
+    }
+
     printf("\nGPU : Brute forcing DES...\n");
     start = clock();
 
